@@ -48,7 +48,7 @@ public class ArbolExpresion {
     }
 
     private boolean esOperador(char c) {
-        return c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '^';
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '&' || c == '|' || c == '!' || c == '^';
     }
 
     private int precedencia(char c) {
@@ -56,27 +56,43 @@ public class ArbolExpresion {
             return 1;
         } else if (c == '*' || c == '/' || c == '%') {
             return 2;
-        } else if (c == '^') {
+        } else if (c == '&' || c == '|' || c == '^') {
             return 3;
+        } else if (c == '!') {
+            return 4;
         }
         return 0;
     }
 
     private void procesarOperador(Stack<Nodo> stack, Stack<Character> operadores) {
         char operador = operadores.pop();
-        Nodo derecho = stack.pop();
-        Nodo izquierdo = stack.pop();
-        if (operador == '^') {
+        if (operador == '!' || operador == '&' || operador == '|') {
+            Nodo derecho = stack.pop();
             Nodo nuevoNodo = new Nodo(0);
-            nuevoNodo.valor = Math.pow(izquierdo.valor, derecho.valor);
+            switch (operador) {
+                case '!':
+                    nuevoNodo.valor = (derecho.valor == 0) ? 1 : 0;
+                    break;
+                case '&':
+                    Nodo izquierdoAnd = stack.pop();
+                    nuevoNodo.valor = (izquierdoAnd.valor != 0 && derecho.valor != 0) ? 1 : 0;
+                    break;
+                case '|':
+                    Nodo izquierdoOr = stack.pop();
+                    nuevoNodo.valor = (izquierdoOr.valor != 0 || derecho.valor != 0) ? 1 : 0;
+                    break;
+            }
             stack.push(nuevoNodo);
         } else {
+            Nodo derecho = stack.pop();
+            Nodo izquierdo = stack.pop();
             Nodo nuevoNodo = new Nodo(operador);
             nuevoNodo.izquierdo = izquierdo;
             nuevoNodo.derecho = derecho;
             stack.push(nuevoNodo);
         }
     }
+
 
     public double evaluar() {
         return evaluar(raiz);
@@ -113,5 +129,7 @@ public class ArbolExpresion {
         }
     }
 }
+
+
 
 
