@@ -2,10 +2,11 @@ package com.example.calculadora;
 
 import java.util.Stack;
 
-class ArbolExpresion {
+public class ArbolExpresion {
     private Nodo raiz;
 
     public ArbolExpresion(String expresion) {
+        expresion = expresion.replace("**", "Math.pow");
         raiz = construirArbol(expresion);
     }
 
@@ -47,14 +48,16 @@ class ArbolExpresion {
     }
 
     private boolean esOperador(char c) {
-        return c == '+' || c == '-' || c == '*' || c == '/';
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '^';
     }
 
     private int precedencia(char c) {
         if (c == '+' || c == '-') {
             return 1;
-        } else if (c == '*' || c == '/') {
+        } else if (c == '*' || c == '/' || c == '%') {
             return 2;
+        } else if (c == '^') {
+            return 3;
         }
         return 0;
     }
@@ -63,10 +66,16 @@ class ArbolExpresion {
         char operador = operadores.pop();
         Nodo derecho = stack.pop();
         Nodo izquierdo = stack.pop();
-        Nodo nuevoNodo = new Nodo(operador);
-        nuevoNodo.izquierdo = izquierdo;
-        nuevoNodo.derecho = derecho;
-        stack.push(nuevoNodo);
+        if (operador == '^') {
+            Nodo nuevoNodo = new Nodo(0);
+            nuevoNodo.valor = Math.pow(izquierdo.valor, derecho.valor);
+            stack.push(nuevoNodo);
+        } else {
+            Nodo nuevoNodo = new Nodo(operador);
+            nuevoNodo.izquierdo = izquierdo;
+            nuevoNodo.derecho = derecho;
+            stack.push(nuevoNodo);
+        }
     }
 
     public double evaluar() {
@@ -91,6 +100,12 @@ class ArbolExpresion {
                         return izquierdo / derecho;
                     } else {
                         throw new ArithmeticException("División por cero");
+                    }
+                case '%':
+                    if (derecho != 0) {
+                        return izquierdo % derecho;
+                    } else {
+                        throw new ArithmeticException("Módulo por cero");
                     }
                 default:
                     throw new IllegalArgumentException("Operador desconocido: " + nodo.operador);
